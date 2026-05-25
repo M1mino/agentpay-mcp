@@ -17,7 +17,7 @@
 
 Для `pay` агент подписывает сообщение:
 ```
-'AgentPay Transfer: {from}→{to} {amount} nonce:{nonce}'
+agentpay_v1:pay:{sender}:{recipient}:{amount}:{nonce}
 ```
 Ключ подписи должен совпадать с `from_address`.
 

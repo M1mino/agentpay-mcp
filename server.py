@@ -72,8 +72,8 @@ def register(address: str) -> str:
 @mcp.tool(
     name="pay",
     description="Transfer CREDIT between agents. Requires an EIP-191 signature "
-                "over the message format: 'AgentPay Transfer: {sender}->{recipient} "
-                "{amount} nonce:{nonce}'. The signing key must match sender address."
+                "over the message format: 'agentpay_v1:pay:{sender}:{recipient}:"
+                "{amount}:{nonce}'. The signing key must match sender address."
 )
 def pay(sender: str, recipient: str, amount: float,
         nonce: int, signature: str) -> str:
