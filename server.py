@@ -38,13 +38,13 @@ api = AgentPayClient()
     description="Get the CREDIT balance of an agent by its Ethereum address. "
                 "Address should start with 0x."
 )
-def get_balance(agent_address: str) -> str:
+def get_balance(address: str) -> str:
     """Check agent's credit balance."""
     try:
-        result = api.get_balance(agent_address)
+        result = api.get_balance(address)
         balance = result.get("balance", 0)
         return (
-            f"**Agent:** `{agent_address[:15]}...`\n"
+            f"**Agent:** `{address[:15]}...`\n"
             f"**Balance:** {balance} CREDIT"
         )
     except AgentPayError as e:
@@ -56,14 +56,14 @@ def get_balance(agent_address: str) -> str:
     description="Register a new agent by its Ethereum address (0x...). "
                 "Creates an account in AgentPay with zero balance."
 )
-def register(agent_address: str) -> str:
+def register(address: str) -> str:
     """Register a new agent."""
     try:
-        result = api.register(agent_address)
+        result = api.register(address)
         return (
-            f"✅ Agent `{agent_address[:15]}...` registered successfully!\n"
-            f"**Balance:** {result.get('balance', 0)} CREDIT\n"
-            f"**Nonce:** {result.get('nonce', 0)}"
+            f"✅ Agent `{result.get('agent_id', address[:15])}` "
+            f"registered successfully!\n"
+            f"**Balance:** 0 CREDIT"
         )
     except AgentPayError as e:
         return f"❌ Error: {e}"
@@ -71,23 +71,22 @@ def register(agent_address: str) -> str:
 
 @mcp.tool(
     name="pay",
-    description=(
-        "Transfer CREDIT between agents. Requires an EIP-191 signature "
-        "over the message format: 'AgentPay Transfer: {from}->{to} {amount} "
-        "nonce:{nonce}'. The signing key must match from_address."
-    )
+    description="Transfer CREDIT between agents. Requires an EIP-191 signature "
+                "over the message format: 'AgentPay Transfer: {sender}->{recipient} "
+                "{amount} nonce:{nonce}'. The signing key must match sender address."
 )
-def pay(from_address: str, to_address: str, amount: float,
-        signature: str, nonce: int) -> str:
+def pay(sender: str, recipient: str, amount: float,
+        nonce: int, signature: str) -> str:
     """Transfer CREDIT with EIP-191 signature."""
     try:
-        result = api.pay(from_address, to_address, amount, signature, nonce)
+        result = api.pay(sender, recipient, amount, nonce, signature)
         return (
             f"✅ Transfer complete\n"
-            f"**From:** `{from_address[:15]}...`\n"
-            f"**To:** `{to_address[:15]}...`\n"
+            f"**From:** `{sender[:15]}...`\n"
+            f"**To:** `{recipient[:15]}...`\n"
             f"**Amount:** {amount} CREDIT\n"
-            f"**New nonce:** {result.get('nonce', nonce + 1)}"
+            f"**Fee:** {result.get('fee', 0)} CREDIT\n"
+            f"**Status:** {result.get('status', 'completed')}"
         )
     except AgentPayError as e:
         return f"❌ Error: {e}"

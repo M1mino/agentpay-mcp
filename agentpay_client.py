@@ -16,9 +16,9 @@ class AgentPayClient:
     def __init__(self, base_url: str = AGENTPAY_URL):
         self.base_url = base_url.rstrip("/")
 
-    def _get(self, path: str, params: Optional[dict] = None) -> dict:
+    def _get(self, path: str) -> dict:
         url = f"{self.base_url}{path}"
-        resp = httpx.get(url, params=params, timeout=10)
+        resp = httpx.get(url, timeout=10)
         if resp.status_code != 200:
             raise AgentPayError(f"GET {path}: {resp.status_code} {resp.text}")
         return resp.json()
@@ -30,23 +30,23 @@ class AgentPayClient:
             raise AgentPayError(f"POST {path}: {resp.status_code} {resp.text}")
         return resp.json()
 
-    def get_balance(self, agent_address: str) -> dict:
-        """Get agent's credit balance."""
-        return self._get("/balance", {"agent_address": agent_address})
+    def get_balance(self, address: str) -> dict:
+        """Get agent's credit balance by on-chain address."""
+        return self._get(f"/balance/{address}")
 
-    def register(self, agent_address: str) -> dict:
-        """Register a new agent."""
-        return self._post("/register", {"agent_address": agent_address})
+    def register(self, address: str) -> dict:
+        """Register a new agent by its on-chain address."""
+        return self._post("/register", {"address": address})
 
-    def pay(self, from_address: str, to_address: str, amount: float,
-            signature: str, nonce: int) -> dict:
+    def pay(self, sender: str, recipient: str, amount: float,
+            nonce: int, signature: str) -> dict:
         """Transfer CREDIT between agents with EIP-191 signature."""
         return self._post("/pay", {
-            "from": from_address,
-            "to": to_address,
+            "sender": sender,
+            "recipient": recipient,
             "amount": amount,
-            "signature": signature,
             "nonce": nonce,
+            "signature": signature,
         })
 
     def audit(self) -> dict:
